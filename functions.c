@@ -1,188 +1,106 @@
-#include "main.h"
+#include <stdio.h>  // Including the standard input-output header file for functions like printf.
+#include <stdlib.h> // Including the standard library header for functions like malloc and exit.
 
-/************************* PRINT CHAR *************************/
+// Defines a structure representing a polynomial with integer coefficients A, B, and C.
+typedef struct {
+    int A, B, C;
+} PolynomialLCM;
 
 /**
- * print_char - Prints a char
- * @types: List a of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: Width
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
+ * Computes the greatest common divisor (GCD) of two integers.
+ *
+ * @param a: An integer.
+ * @param b: Another integer.
+ * @return: The greatest common divisor of a and b.
  */
-int print_char(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
-{
-	char c = va_arg(types, int);
-
-	return (handle_write_char(c, buffer, flags, width, precision, size));
-}
-/************************* PRINT A STRING *************************/
-/**
- * print_string - Prints a string
- * @types: List a of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
- */
-int print_string(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
-{
-	int length = 0, i;
-	char *str = va_arg(types, char *);
-
-	UNUSED(buffer);
-	UNUSED(flags);
-	UNUSED(width);
-	UNUSED(precision);
-	UNUSED(size);
-	if (str == NULL)
-	{
-		str = "(null)";
-		if (precision >= 6)
-			str = "      ";
-	}
-
-	while (str[length] != '\0')
-		length++;
-
-	if (precision >= 0 && precision < length)
-		length = precision;
-
-	if (width > length)
-	{
-		if (flags & F_MINUS)
-		{
-			write(1, &str[0], length);
-			for (i = width - length; i > 0; i--)
-				write(1, " ", 1);
-			return (width);
-		}
-		else
-		{
-			for (i = width - length; i > 0; i--)
-				write(1, " ", 1);
-			write(1, &str[0], length);
-			return (width);
-		}
-	}
-
-	return (write(1, str, length));
-}
-/************************* PRINT PERCENT SIGN *************************/
-/**
- * print_percent - Prints a percent sign
- * @types: Lista of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
- */
-int print_percent(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
-{
-	UNUSED(types);
-	UNUSED(buffer);
-	UNUSED(flags);
-	UNUSED(width);
-	UNUSED(precision);
-	UNUSED(size);
-	return (write(1, "%%", 1));
+int GCD(int a, int b) {
+    if (b == 0)  // Base case: if b is zero, the GCD is a.
+        return a;
+    return GCD(b, a % b);  // Recursive case: continue with b and the remainder of a divided by b.
 }
 
-/************************* PRINT INT *************************/
 /**
- * print_int - Print int
- * @types: Lista of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Number of chars printed
+ * Initializes and allocates memory for a new PolynomialLCM object.
+ *
+ * @param a: Coefficient for x^2.
+ * @param b: Coefficient for x.
+ * @param c: Constant coefficient.
+ * @return: A pointer to the allocated PolynomialLCM object.
+ * @exception: Exits the program if any of the coefficients are zero or if memory allocation fails.
  */
-int print_int(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
-{
-	int i = BUFF_SIZE - 2;
-	int is_negative = 0;
-	long int n = va_arg(types, long int);
-	unsigned long int num;
+PolynomialLCM* PolynomialLCM_init(int a, int b, int c) {
+    if (a == 0 || b == 0 || c == 0) {  // Checking for zero coefficients.
+        printf("Coefficients should not be zero.\n");
+        exit(EXIT_FAILURE);  // Exiting the program with a failure status.
+    }
 
-	n = convert_size_number(n, size);
+    // Allocating memory for a PolynomialLCM object.
+    PolynomialLCM* polynomial = (PolynomialLCM*) malloc(sizeof(PolynomialLCM));
 
-	if (n == 0)
-		buffer[i--] = '0';
+    if (polynomial == NULL) {  // Checking for unsuccessful memory allocation.
+        printf("Memory allocation failed.\n");
+        exit(EXIT_FAILURE);  // Exiting the program with a failure status.
+    }
 
-	buffer[BUFF_SIZE - 1] = '\0';
-	num = (unsigned long int)n;
+    // Assigning the passed coefficients to the polynomial object.
+    polynomial->A = a;
+    polynomial->B = b;
+    polynomial->C = c;
 
-	if (n < 0)
-	{
-		num = (unsigned long int)((-1) * n);
-		is_negative = 1;
-	}
-
-	while (num > 0)
-	{
-		buffer[i--] = (num % 10) + '0';
-		num /= 10;
-	}
-
-	i++;
-
-	return (write_number(is_negative, i, buffer, flags, width, precision, size));
+    return polynomial;  // Returning the initialized polynomial object.
 }
 
-/************************* PRINT BINARY *************************/
 /**
- * print_binary - Prints an unsigned number
- * @types: Lista of arguments
- * @buffer: Buffer array to handle print
- * @flags:  Calculates active flags
- * @width: get width.
- * @precision: Precision specification
- * @size: Size specifier
- * Return: Numbers of char printed.
+ * Retrieves the coefficient A of a PolynomialLCM object.
+ *
+ * @param polynomial: A pointer to the PolynomialLCM object.
+ * @return: The coefficient A.
  */
-int print_binary(va_list types, char buffer[],
-	int flags, int width, int precision, int size)
-{
-	unsigned int n, m, i, sum;
-	unsigned int a[32];
-	int count;
+int getA(const PolynomialLCM* polynomial) {
+    return polynomial->A;
+}
 
-	UNUSED(buffer);
-	UNUSED(flags);
-	UNUSED(width);
-	UNUSED(precision);
-	UNUSED(size);
+/**
+ * Retrieves the coefficient B of a PolynomialLCM object.
+ *
+ * @param polynomial: A pointer to the PolynomialLCM object.
+ * @return: The coefficient B.
+ */
+int getB(const PolynomialLCM* polynomial) {
+    return polynomial->B;
+}
 
-	n = va_arg(types, unsigned int);
-	m = 2147483648; /* (2 ^ 31) */
-	a[0] = n / m;
-	for (i = 1; i < 32; i++)
-	{
-		m /= 2;
-		a[i] = (n / m) % 2;
-	}
-	for (i = 0, sum = 0, count = 0; i < 32; i++)
-	{
-		sum += a[i];
-		if (sum || i == 31)
-		{
-			char z = '0' + a[i];
+/**
+ * Retrieves the coefficient C of a PolynomialLCM object.
+ *
+ * @param polynomial: A pointer to the PolynomialLCM object.
+ * @return: The coefficient C.
+ */
+int getC(const PolynomialLCM* polynomial) {
+    return polynomial->C;
+}
 
-			write(1, &z, 1);
-			count++;
-		}
-	}
-	return (count);
+/**
+ * Calculates the least common multiple (LCM) of the coefficients of a PolynomialLCM object.
+ *
+ * @param polynomial: A pointer to the PolynomialLCM object.
+ * @return: The LCM of the coefficients.
+ */
+int CalculateLCM(PolynomialLCM* polynomial) {
+    // Calculate LCM of A and B using the formula (A*B)/GCD(A,B).
+    int lcmAB = (polynomial->A * polynomial->B) / GCD(polynomial->A, polynomial->B);
+    // Calculate LCM of the previous result and C.
+    int lcmABC = (lcmAB * polynomial->C) / GCD(lcmAB, polynomial->C);
+    return lcmABC;  // Returning the computed LCM.
+}
+
+/**
+ * Evaluates a Second-degree Polynomial using Given Coefficients and a Value of x.
+ *
+ * @param polynomial: A pointer to a PolynomialLCM object that holds the coefficients A, B, and C.
+ * @param x: A double precision floating point value representing the input to the polynomial.
+ * @return: A double precision floating point value which is the result of evaluating Ax^2 + Bx + C for the given x.
+ */
+double EvaluatePolynomial(PolynomialLCM* polynomial, double x) {
+    return polynomial->A * x * x + polynomial->B * x + polynomial->C;
 }
