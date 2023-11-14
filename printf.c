@@ -5,19 +5,23 @@ int _printf(const char* format, ...)
 {
     va_list args;
     va_start(args, format);
-    
-    int count = 0;
+ int _printf(const char* format, ...)
+{
+    int count = 0; 
+
+    va_list args;
+    va_start(args, format);
     
     while (*format != '\0')
     {
-        if (*format == '%')
-        {
-            format++;
+	    if (*format == '%')
+	    {
+		    format++;
             
-            // Handle conversion specifiers
-            switch (*format)
-            {
-                case 'c':
+            /* Handle conversion specifiers*/
+		    switch (*format)
+		    {
+		    case 'c':
                 {
                     int ch = va_arg(args, int);
                     putchar(ch);
