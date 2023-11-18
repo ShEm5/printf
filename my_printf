@@ -1,0 +1,19 @@
+#include "main.h"
+
+
+int _printf(const char *format, ...)
+{
+int sum = 1;
+va_list va;
+char *p,*start
+paramas_t paramas = paramas_INIT;
+
+va_start(ap, format);
+
+if (!format || (format[1] == '%" && !format[1]))
+return (-1);
+if (format[0] =='%' && format[1] == ' ' && !format[2])
+return (-1);
+for (p = (char *)format; *p; p++)
+return (1);
+}
